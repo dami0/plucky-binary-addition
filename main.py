@@ -18,6 +18,7 @@ class PongPaddle(Widget):
       vel = bounced * 1.1
       ball.velocity = vel.x, vel.y + offset
 
+
 class PongBall(Widget):
   velocity_x = NumericProperty(0)
   velocity_y = NumericProperty(0)
@@ -25,6 +26,7 @@ class PongBall(Widget):
 
   def move(self):
     self.pos = Vector(*self.velocity) + self.pos
+
 
 class PongGame(Widget):
   ball = ObjectProperty(None)
@@ -43,11 +45,19 @@ class PongGame(Widget):
 
   def update(self, dt):
     self.ball.move()
+
+    self.player1.bounce_ball(self.ball)
+    self.player2.bounce_ball(self.ball)
     
     if (self.ball.y < 0) or (self.ball.top > self.height):
       self.ball.velocity_y *= -1
-    if (self.ball.x < 0) or (self.ball.right > self.width):
-      self.ball.velocity_x *= -1
+
+    if (self.ball.x < 0):
+      self.player2.score += 1
+      self.serve_ball()
+    if (self.ball.x > self.width):
+      self.player1.score += 1
+      self.serve_ball()
 
 class PongApp(App):
   def build(self):
