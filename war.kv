@@ -1,0 +1,15 @@
+#:kivy 1.8.0-dev
+
+<WarBackground>:
+  player: hp
+
+  WarPlayer:
+    id: hp
+    center: self.parent.center
+
+<WarPlayer>:
+  size: 25, 25
+  canvas:
+    Ellipse:
+      size: self.size
+      pos: self.pos
