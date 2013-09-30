@@ -23,17 +23,27 @@ class WarPlayer(Widget):
     self.pos = Vector(*self.velocity) + self.pos
 
 
-class LaserGun(Widget):
-  alpha = .8
-  color = (1, 0, 0, alpha)
-  
+class LaserGun(Widget):  
   def Bullet(self, xy, x, y):
     with self.canvas:
-      Color(*self.color, mode='rgba')
+      Color(*(1, 0, 0, .8), mode='rgba')
       Line(points=[xy[0], xy[1], x, y], width=1)
+
+
+class Levels(Widget):
+  def move(self):
+    self.pos = Vector(*self.velocity) + self.pos
+    self.canvas.clear()
+    self.Rooms()
+
+  def Rooms(self, x, y):
+    with self.canvas:
+      Color(*(1, 1, 1, 1), mode='rgba')
+      Line(rectangle=(x, y, 50, 100), width=5)
 
 class WarBackground(Widget):
   player = ObjectProperty(None)
+  layout = Levels()
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3]))
   already_pressed = len(kcds)*[0]
   move_speed = 1.5
@@ -43,6 +53,10 @@ class WarBackground(Widget):
     self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
     self._keyboard.bind(on_key_down=self._on_keyboard_down)
     self._keyboard.bind(on_key_up=self._on_keyboard_up)
+
+  def levelgen(self):
+    self.add_widget(self.layout)
+    self.layout.Rooms(self.player.pos[0], self.player.pos[1])
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -99,7 +113,7 @@ class WarBackground(Widget):
     self.c = LaserGun()
     self.add_widget(self.c)
     self.c.Bullet(self.player.center, touch.x, touch.y)
-    Animation(alpha=0.1).start(self.c)
+    Animation(opacity=0.0, d=0.5).start(self.c)
 
     return True
 
@@ -109,6 +123,7 @@ class WarBackground(Widget):
 class WarApp(App):
   def build(self):
     background = WarBackground()
+    background.levelgen()
     Clock.schedule_interval(background.update, 1.0/60.0)
     return background
 
