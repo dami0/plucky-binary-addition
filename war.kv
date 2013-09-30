@@ -2,14 +2,26 @@
 
 <WarBackground>:
   player: hp
+  w_vert: vw
 
   WarPlayer:
     id: hp
-    center: self.parent.center
+    center: 700, 400
+
+  Vertical_Wall:
+    id: vw
+    center: 1250, 50
 
 <WarPlayer>:
   size: 10, 10
   canvas:
     Ellipse:
+      size: self.size
+      pos: self.pos
+
+<Vertical_Wall>:
+  size: 15, 100
+  canvas:
+    Rectangle:
       size: self.size
       pos: self.pos
