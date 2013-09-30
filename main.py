@@ -11,6 +11,7 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Line
+from kivy.animation import Animation
 
 
 class WarPlayer(Widget):
@@ -23,15 +24,13 @@ class WarPlayer(Widget):
 
 
 class LaserGun(Widget):
-  color = [1, 0, 0, .8]
+  alpha = .8
+  color = (1, 0, 0, alpha)
   
   def Bullet(self, xy, x, y):
     with self.canvas:
       Color(*self.color, mode='rgba')
       Line(points=[xy[0], xy[1], x, y], width=1)
-
-  def animate(self):
-    self.colour[3] -= 0.1
 
 class WarBackground(Widget):
   player = ObjectProperty(None)
@@ -98,8 +97,9 @@ class WarBackground(Widget):
 
   def on_touch_down(self, touch):
     self.c = LaserGun()
-    print self.player.center
+    self.add_widget(self.c)
     self.c.Bullet(self.player.center, touch.x, touch.y)
+    Animation(alpha=0.1).start(self.c)
 
     return True
 
