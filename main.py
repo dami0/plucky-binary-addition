@@ -10,6 +10,7 @@ from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProper
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.graphics import Color, Line
 
 
 class WarPlayer(Widget):
@@ -20,6 +21,17 @@ class WarPlayer(Widget):
   def move(self):
     self.pos = Vector(*self.velocity) + self.pos
 
+
+class LaserGun(Widget):
+  color = [1, 0, 0, .8]
+  
+  def Bullet(self, xy, x, y):
+    with self.canvas:
+      Color(*self.color, mode='rgba')
+      Line(points=[xy[0], xy[1], x, y], width=1)
+
+  def animate(self):
+    self.colour[3] -= 0.1
 
 class WarBackground(Widget):
   player = ObjectProperty(None)
@@ -84,14 +96,21 @@ class WarBackground(Widget):
 
     return True
 
+  def on_touch_down(self, touch):
+    self.c = LaserGun()
+    print self.player.center
+    self.c.Bullet(self.player.center, touch.x, touch.y)
+
+    return True
+
   def update(self, dt):
     self.player.move()
 
 class WarApp(App):
   def build(self):
-    back = WarBackground()
-    Clock.schedule_interval(back.update, 1.0/60.0)
-    return back
+    background = WarBackground()
+    Clock.schedule_interval(background.update, 1.0/60.0)
+    return background
 
 if __name__ == '__main__':
   WarApp().run()
