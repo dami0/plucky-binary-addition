@@ -37,13 +37,16 @@ class LaserGun(Widget):
     with self.canvas:
       Color(*(1, 0, 0, .8), mode='rgba')
       Line(points=[xy[0], xy[1], x, y], width=1)
+    anim = Animation(opacity=0.5, d=0.8)
+#    anim.bind(on_complete=lambda *x: self.canvas.clear())
+    anim.start(self) #animate it so it dissapears over time
 
 
 class Vertical_Wall(Widget):
-  '''This is for the level design. Currently I've outsourced this to the KV
-     language file.'''
-  def Vert(self, xp, yp):
-    self.size = 10, 100
+  '''This is for the level design. A vertical wall, width 10 and definable
+     placement as well as '''
+  def Vert(self, xp, yp, w_height):
+    self.size = 20, w_height
     with self.canvas:
       Color(*(0, 1, 1, 1), mode='rgba')
       Line(points=[xp, yp - 50, xp, yp + 50], width=10, cap='none')
@@ -78,7 +81,7 @@ class WarBackground(Widget): #the root widget, the window maker
   def levelgen(self):
     self.add_widget(self.w_vert)
     self.player.center_x = 150; self.player.center_y = 300
-    self.w_vert.Vert(150, 150)
+    self.w_vert.Vert(150, 150, 100)
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -135,7 +138,6 @@ class WarBackground(Widget): #the root widget, the window maker
     self.c = LaserGun() #add a gun class for the currently used gun
     self.add_widget(self.c) #draw the lazor
     self.c.Bullet(self.player.center, touch.x, touch.y) #make sure lazor travels right
-    Animation(opacity=0.0, d=0.5).start(self.c) #animate it so it dissapears over time
 
     return True #handle that s**t
 
