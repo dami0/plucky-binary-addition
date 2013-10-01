@@ -21,6 +21,8 @@ class WarPlayer(Widget):
   velocity_x = NumericProperty(0)
   velocity_y = NumericProperty(0)
   velocity = ReferenceListProperty(velocity_x, velocity_y)
+  move_speed = 1.5 #move speed of player blob
+  
   #movement for the update script
   def move(self):
     self.pos = Vector(*self.velocity) + self.pos
@@ -37,40 +39,53 @@ class LaserGun(Widget):
     with self.canvas:
       Color(*(1, 0, 0, .8), mode='rgba')
       Line(points=[xy[0], xy[1], x, y], width=1)
-    anim = Animation(opacity=0.5, d=0.8)
+    anim = Animation(opacity=0, d=0.8)
 #    anim.bind(on_complete=lambda *x: self.canvas.clear())
     anim.start(self) #animate it so it dissapears over time
 
 
 class Vertical_Wall(Widget):
   '''This is for the level design. A vertical wall, width 10 and definable
-     placement as well as '''
+     placement as well as length.'''
   def Vert(self, xp, yp, w_height):
-    self.size = 20, w_height
+    self.size = 18.5, w_height
     with self.canvas:
-      Color(*(0, 1, 1, 1), mode='rgba')
-      Line(points=[xp, yp - 50, xp, yp + 50], width=10, cap='none')
+      Color(*(0, 1, 1, .5), mode='rgba')
+      Line(points=[xp, yp - w_height/2, xp, yp + w_height/2], width=10, cap='none')
       self.center_x = xp; self.center_y = yp
 
   def collision_detect(self, playa):
     if self.collide_widget(playa):
-      print 'Collision!'
+      if playa.velocity_x < 0: playa.pos[0] += 1.5
+      elif playa.velocity_x > 0: playa.pos[0] -= 1.5
+
+  def bullet_detect(self, gun):
+    if self.collide_widget(gun):
+      
 
 class Horizontal_Wall(Widget):
-  '''This is for the level design. Currently I've outsourced this to the KV
-     language file.'''
+  '''This is for the level design. A horizontal wall, width 10 and definable
+     placement as well as length.'''
+  def Hort(self, xp, yp, w_width):
+    self.size = w_width, 18.5
+    with self.canvas:
+      Color(*(0, 1, 1, .5), mode='rgba')
+      Line(points=[xp - w_width/2, yp, xp + w_width/2, yp], width=10, cap='none')
+      self.center_x = xp; self.center_y = yp
+      
   def collision_detect(self, playa):
     if self.collide_widget(playa):
-      print 'Collision!'
+      if playa.velocity_y < 0: playa.pos[1] += 1.5
+      elif playa.velocity_y > 0: playa.pos[1] -= 1.5
 
 
 class WarBackground(Widget): #the root widget, the window maker
   player = ObjectProperty(None) #assign all the stuff to draw, player char.
   w_vert = Vertical_Wall()             #level layout
-  W_hort = Horizontal_Wall()
+  w_hort = Horizontal_Wall()
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
-  move_speed = 1.5 #move speed of player blob
+  c = []
 
   def __init__(self, **kwargs): #standard adds for keyboard and things
     super(WarBackground, self).__init__(**kwargs)
@@ -80,8 +95,10 @@ class WarBackground(Widget): #the root widget, the window maker
 
   def levelgen(self):
     self.add_widget(self.w_vert)
+    self.add_widget(self.w_hort)
     self.player.center_x = 150; self.player.center_y = 300
     self.w_vert.Vert(150, 150, 100)
+    self.w_hort.Hort(150, 150, 100)
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -89,22 +106,22 @@ class WarBackground(Widget): #the root widget, the window maker
   def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
     #what to do if keys are pressed, extensions of keybindings
     if keycode[1] == 'w' and not self.already_pressed[self.kcds[keycode[1]]]:
-      self.player.velocity_y += self.move_speed
+      self.player.velocity_y += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 1
       keyboard.release()
   
     if keycode[1] == 's' and not self.already_pressed[self.kcds[keycode[1]]]:
-      self.player.velocity_y -= self.move_speed
+      self.player.velocity_y -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 1
       keyboard.release()
   
     if keycode[1] == 'a' and not self.already_pressed[self.kcds[keycode[1]]]:
-      self.player.velocity_x -= self.move_speed
+      self.player.velocity_x -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 1
       keyboard.release()
   
     if keycode[1] == 'd' and not self.already_pressed[self.kcds[keycode[1]]]:
-      self.player.velocity_x += self.move_speed
+      self.player.velocity_x += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 1
       keyboard.release()
       
@@ -113,38 +130,45 @@ class WarBackground(Widget): #the root widget, the window maker
   def _on_keyboard_up(self, keyboard, keycode):
     #what to do on key release
     if keycode[1] == 'w':
-      self.player.velocity_y -= self.move_speed
+      self.player.velocity_y -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
     if keycode[1] == 's':
-      self.player.velocity_y += self.move_speed
+      self.player.velocity_y += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
     if keycode[1] == 'a':
-      self.player.velocity_x += self.move_speed
+      self.player.velocity_x += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
     if keycode[1] == 'd':
-      self.player.velocity_x -= self.move_speed
+      self.player.velocity_x -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
 
     return True
 
   def on_touch_down(self, touch): #shoot lazors on click! whooooooooo!
-    self.c = LaserGun() #add a gun class for the currently used gun
-    self.add_widget(self.c) #draw the lazor
-    self.c.Bullet(self.player.center, touch.x, touch.y) #make sure lazor travels right
+    index = len(self.c)
+    self.c.append(LaserGun()) #add a gun class for the currently used gun
+    self.add_widget(self.c[index]) #draw the lazor
+    self.c[index].Bullet(self.player.center, touch.x, touch.y) #make sure lazor travels right
+    Clock.schedule_once(self.clean_call, 1)
 
     return True #handle that s**t
+
+  def clean_call(self, dt):
+    self.remove_widget(self.c[0])
+    self.c.pop(0)
 
   def update(self, dt): #overall game update mechanism
     self.player.move()  #move dat blob
 
     self.w_vert.collision_detect(self.player)
+    self.w_hort.collision_detect(self.player)
 
 class WarApp(App): #main app process
   def build(self):
