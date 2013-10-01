@@ -31,7 +31,7 @@ class LaserGun(Widget):
      weaponry before player/class, skill and equipped modifications modifiers.
      It also contains the base bullet graphics, which in this case travel
      instantly. In reality it's the speed of light, but can you be bothered
-     to code in a speed of 300,000,000 metres a second? Didn't think so.'''
+     to code in a speed of 30,000,000 metres a second? Didn't think so.'''
   def Bullet(self, xy, x, y):
     #the code for a red line, because c'mon, it's a lazor!
     with self.canvas:
@@ -40,15 +40,22 @@ class LaserGun(Widget):
 
 
 class Vertical_Wall(Widget):
-  '''This is the level design. Currently I've outsourced this to the KV language
-     file.'''
+  '''This is for the level design. Currently I've outsourced this to the KV
+     language file.'''
+  def Vert(self, xp, yp):
+    self.size = 10, 100
+    with self.canvas:
+      Color(*(0, 1, 1, 1), mode='rgba')
+      Line(points=[xp, yp - 50, xp, yp + 50], width=10, cap='none')
+      self.center_x = xp; self.center_y = yp
+
   def collision_detect(self, playa):
     if self.collide_widget(playa):
       print 'Collision!'
 
 class Horizontal_Wall(Widget):
-  '''This is the level design. Currently I've outsourced this to the KV language
-     file.'''
+  '''This is for the level design. Currently I've outsourced this to the KV
+     language file.'''
   def collision_detect(self, playa):
     if self.collide_widget(playa):
       print 'Collision!'
@@ -58,7 +65,7 @@ class WarBackground(Widget): #the root widget, the window maker
   player = ObjectProperty(None) #assign all the stuff to draw, player char.
   w_vert = Vertical_Wall()             #level layout
   W_hort = Horizontal_Wall()
-  kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #confiburable keybindings
+  kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
   move_speed = 1.5 #move speed of player blob
 
@@ -68,10 +75,10 @@ class WarBackground(Widget): #the root widget, the window maker
     self._keyboard.bind(on_key_down=self._on_keyboard_down)
     self._keyboard.bind(on_key_up=self._on_keyboard_up)
 
-#  def levelgen(self):
-#    self.add_widget(self.layout)
-#    self.player.center_x = 150; self.player.center_y = 50
-#    self.layout.Rooms(self.center_x + 100, self.player.center_y)
+  def levelgen(self):
+    self.add_widget(self.w_vert)
+    self.player.center_x = 150; self.player.center_y = 300
+    self.w_vert.Vert(150, 150)
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -130,7 +137,7 @@ class WarBackground(Widget): #the root widget, the window maker
     self.c.Bullet(self.player.center, touch.x, touch.y) #make sure lazor travels right
     Animation(opacity=0.0, d=0.5).start(self.c) #animate it so it dissapears over time
 
-    return True #handle that shit
+    return True #handle that s**t
 
   def update(self, dt): #overall game update mechanism
     self.player.move()  #move dat blob
@@ -140,7 +147,7 @@ class WarBackground(Widget): #the root widget, the window maker
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
-#    background.levelgen() #generate player levels
+    background.levelgen() #generate player levels
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
 
