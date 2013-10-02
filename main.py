@@ -17,15 +17,15 @@ from kivy.animation import Animation
 class WarPlayer(Widget):
   '''This is the player class. It defines movement/position parameters and
      player status variables like health, stamina and quite a few other things
-     that describe the what's currently going on with them.'''
+     that describe what's currently going on with them.'''
   velocity_x = NumericProperty(0)
   velocity_y = NumericProperty(0)
   velocity = ReferenceListProperty(velocity_x, velocity_y)
-  move_speed = 1.5 #move speed of player blob
+  move_speed = 90 #move speed of player blob
   
   #movement for the update script
-  def move(self):
-    self.pos = Vector(*self.velocity) + self.pos
+  def move(self, dt):
+    self.pos = Vector(*self.velocity)*dt + self.pos
 
 
 class LaserGun(Widget):
@@ -34,20 +34,23 @@ class LaserGun(Widget):
      It also contains the base bullet graphics, which in this case travel
      instantly. In reality it's the speed of light, but can you be bothered
      to code in a speed of 30,000,000 metres a second? Didn't think so.'''
-  def Bullet(self, xy, x, y):
+  def Bullet(self, s, e):
     #the code for a red line, because c'mon, it's a lazor!
+    self.s = s
+    self.e = e
     with self.canvas:
-      Color(*(1, 0, 0, .8), mode='rgba')
-      Line(points=[xy[0], xy[1], x, y], width=1)
-    anim = Animation(opacity=0, d=0.8)
-#    anim.bind(on_complete=lambda *x: self.canvas.clear())
-    anim.start(self) #animate it so it dissapears over time
+      Color(*(1, 0.1, 0.25, 0.8), mode='rgba')
+      Line(points=[s[0], s[1], e[0], e[1]], width=1)
+    decay = Animation(opacity=0, d=0.8)
+    decay.start(self) #animate it so it dissapears over time
 
 
 class Vertical_Wall(Widget):
   '''This is for the level design. A vertical wall, width 10 and definable
      placement as well as length.'''
   def Vert(self, xp, yp, w_height):
+    self.l = [xp - 10, yp - w_height/2, xp - 10, yp + w_height/2]
+    self.r = [xp + 10, yp - w_height/2, xp + 10, yp + w_height/2]
     self.size = 18.5, w_height
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
@@ -59,14 +62,29 @@ class Vertical_Wall(Widget):
       if playa.velocity_x < 0: playa.pos[0] += 1.5
       elif playa.velocity_x > 0: playa.pos[0] -= 1.5
 
-  def bullet_detect(self, gun):
-    if self.collide_widget(gun):
-      
+  def l_detect(self, gun):
+    i = Vector.line_intersection(self.l[0:2], self.l[2:4], gun.s, gun.e)
+    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
+    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
+    if (i[0] == self.l[0]) and (self.l[1] <= i[1] <= self.l[3]):
+      if (a) and (b):
+        print 'Collision!'
+
+  def r_detect(self, gun):
+    i = Vector.line_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
+    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
+    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
+    if (i[0] == self.r[0]) and (self.r[1] <= i[1] <= self.r[3]):
+      if (a) and (b):
+        print 'Collision!'
+
 
 class Horizontal_Wall(Widget):
   '''This is for the level design. A horizontal wall, width 10 and definable
      placement as well as length.'''
   def Hort(self, xp, yp, w_width):
+    self.b = [xp - w_width/2, yp - 10, xp + w_width, yp - 10]
+    self.t = [xp - w_width/2, yp + 10, xp + w_width, yp + 10]
     self.size = w_width, 18.5
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
@@ -77,6 +95,8 @@ class Horizontal_Wall(Widget):
     if self.collide_widget(playa):
       if playa.velocity_y < 0: playa.pos[1] += 1.5
       elif playa.velocity_y > 0: playa.pos[1] -= 1.5
+
+
 
 
 class WarBackground(Widget): #the root widget, the window maker
@@ -155,7 +175,9 @@ class WarBackground(Widget): #the root widget, the window maker
     index = len(self.c)
     self.c.append(LaserGun()) #add a gun class for the currently used gun
     self.add_widget(self.c[index]) #draw the lazor
-    self.c[index].Bullet(self.player.center, touch.x, touch.y) #make sure lazor travels right
+    self.c[index].Bullet(self.player.center, [touch.x, touch.y]) #make sure lazor travels right
+    self.w_vert.l_detect(self.c[index])
+    self.w_vert.r_detect(self.c[index])
     Clock.schedule_once(self.clean_call, 1)
 
     return True #handle that s**t
@@ -165,7 +187,7 @@ class WarBackground(Widget): #the root widget, the window maker
     self.c.pop(0)
 
   def update(self, dt): #overall game update mechanism
-    self.player.move()  #move dat blob
+    self.player.move(dt)  #move dat blob
 
     self.w_vert.collision_detect(self.player)
     self.w_hort.collision_detect(self.player)
