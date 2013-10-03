@@ -25,6 +25,7 @@ class WarPlayer(Widget):
   
   #movement for the update script
   def move(self, dt):
+    self.dt = dt
     self.pos = Vector(*self.velocity)*dt + self.pos
 
 
@@ -51,7 +52,7 @@ class Vertical_Wall(Widget):
   def Vert(self, xp, yp, w_height):
     self.l = [xp - 10, yp - w_height/2, xp - 10, yp + w_height/2]
     self.r = [xp + 10, yp - w_height/2, xp + 10, yp + w_height/2]
-    self.size = 18.5, w_height
+    self.size = 18, w_height
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
       Line(points=[xp, yp - w_height/2, xp, yp + w_height/2], width=10, cap='none')
@@ -59,8 +60,10 @@ class Vertical_Wall(Widget):
 
   def collision_detect(self, playa):
     if self.collide_widget(playa):
-      if playa.velocity_x < 0: playa.pos[0] += 1.5
-      elif playa.velocity_x > 0: playa.pos[0] -= 1.5
+      if playa.velocity_x < 0:
+        playa.pos[0] += 90*playa.dt
+      elif playa.velocity_x > 0:
+        playa.pos[0] -= 90*playa.dt
 
   def l_detect(self, gun):
     i = Vector.line_intersection(self.l[0:2], self.l[2:4], gun.s, gun.e)
@@ -68,7 +71,8 @@ class Vertical_Wall(Widget):
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
     if (i[0] == self.l[0]) and (self.l[1] <= i[1] <= self.l[3]):
       if (a) and (b):
-        print 'Collision!'
+        gun.canvas.clear()
+        gun.Bullet(gun.s, i)
 
   def r_detect(self, gun):
     i = Vector.line_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
@@ -76,16 +80,16 @@ class Vertical_Wall(Widget):
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
     if (i[0] == self.r[0]) and (self.r[1] <= i[1] <= self.r[3]):
       if (a) and (b):
-        print 'Collision!'
-
+        gun.canvas.clear()
+        gun.Bullet(gun.s, i)
 
 class Horizontal_Wall(Widget):
   '''This is for the level design. A horizontal wall, width 10 and definable
      placement as well as length.'''
   def Hort(self, xp, yp, w_width):
-    self.b = [xp - w_width/2, yp - 10, xp + w_width, yp - 10]
-    self.t = [xp - w_width/2, yp + 10, xp + w_width, yp + 10]
-    self.size = w_width, 18.5
+    self.b = [xp - w_width/2, yp - 10, xp + w_width/2, yp - 10]
+    self.t = [xp - w_width/2, yp + 10, xp + w_width/2, yp + 10]
+    self.size = w_width, 18
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
       Line(points=[xp - w_width/2, yp, xp + w_width/2, yp], width=10, cap='none')
@@ -93,16 +97,34 @@ class Horizontal_Wall(Widget):
       
   def collision_detect(self, playa):
     if self.collide_widget(playa):
-      if playa.velocity_y < 0: playa.pos[1] += 1.5
-      elif playa.velocity_y > 0: playa.pos[1] -= 1.5
+      if playa.velocity_y < 0:
+        playa.pos[1] += 90*playa.dt
+      elif playa.velocity_y > 0:
+        playa.pos[1] -= 90*playa.dt
 
+  def b_detect(self, gun):
+    i = Vector.line_intersection(self.b[0:2], self.b[2:4], gun.s, gun.e)
+    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
+    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
+    if (self.b[0] <= i[0] <= self.b[2]) and (i[1] == self.b[3]):
+      if (a) and (b):
+        gun.canvas.clear()
+        gun.Bullet(gun.s, i)
 
+  def t_detect(self, gun):
+    i = Vector.line_intersection(self.t[0:2], self.t[2:4], gun.s, gun.e)
+    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
+    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
+    if (self.t[0] <= i[0] <= self.t[2]) and (i[1] == self.t[1]):
+      if (a) and (b):
+        gun.canvas.clear()
+        gun.Bullet(gun.s, i)
 
 
 class WarBackground(Widget): #the root widget, the window maker
   player = ObjectProperty(None) #assign all the stuff to draw, player char.
-  w_vert = Vertical_Wall()             #level layout
-  w_hort = Horizontal_Wall()
+  w_vert = []                   #level layout
+  w_hort = []
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
   c = []
@@ -114,11 +136,18 @@ class WarBackground(Widget): #the root widget, the window maker
     self._keyboard.bind(on_key_up=self._on_keyboard_up)
 
   def levelgen(self):
-    self.add_widget(self.w_vert)
-    self.add_widget(self.w_hort)
-    self.player.center_x = 150; self.player.center_y = 300
-    self.w_vert.Vert(150, 150, 100)
-    self.w_hort.Hort(150, 150, 100)
+    self.i = 0
+    self.player.center_x = 1250; self.player.center_y = 30
+    while self.i < 2:
+      self.w_vert.append(Vertical_Wall())
+      self.w_hort.append(Horizontal_Wall())
+      self.add_widget(self.w_vert[self.i])
+      self.add_widget(self.w_hort[self.i])
+      self.i += 1
+    self.w_vert[0].Vert(1270, 65, 130)
+    self.w_hort[0].Hort(1120, 10, 320)
+    self.w_hort[1].Hort(1240, 120, 80)
+    self.w_vert[1].Vert(1210, 200, 320)
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -149,22 +178,22 @@ class WarBackground(Widget): #the root widget, the window maker
 
   def _on_keyboard_up(self, keyboard, keycode):
     #what to do on key release
-    if keycode[1] == 'w':
+    if keycode[1] == 'w' and self.already_pressed[self.kcds[keycode[1]]]:
       self.player.velocity_y -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
-    if keycode[1] == 's':
+    if keycode[1] == 's' and self.already_pressed[self.kcds[keycode[1]]]:
       self.player.velocity_y += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
-    if keycode[1] == 'a':
+    if keycode[1] == 'a' and self.already_pressed[self.kcds[keycode[1]]]:
       self.player.velocity_x += self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
   
-    if keycode[1] == 'd':
+    if keycode[1] == 'd' and self.already_pressed[self.kcds[keycode[1]]]:
       self.player.velocity_x -= self.player.move_speed
       self.already_pressed[self.kcds[keycode[1]]] = 0
       keyboard.release()
@@ -178,8 +207,9 @@ class WarBackground(Widget): #the root widget, the window maker
     self.c[index].Bullet(self.player.center, [touch.x, touch.y]) #make sure lazor travels right
     self.w_vert.l_detect(self.c[index])
     self.w_vert.r_detect(self.c[index])
+    self.w_hort.b_detect(self.c[index])
+    self.w_hort.t_detect(self.c[index])
     Clock.schedule_once(self.clean_call, 1)
-
     return True #handle that s**t
 
   def clean_call(self, dt):
@@ -189,8 +219,12 @@ class WarBackground(Widget): #the root widget, the window maker
   def update(self, dt): #overall game update mechanism
     self.player.move(dt)  #move dat blob
 
-    self.w_vert.collision_detect(self.player)
-    self.w_hort.collision_detect(self.player)
+    self.i = 0
+    while self.i < 2:
+      self.w_vert[self.i].collision_detect(self.player)
+      self.w_hort[self.i].collision_detect(self.player)
+      self.i += 1
+      
 
 class WarApp(App): #main app process
   def build(self):
