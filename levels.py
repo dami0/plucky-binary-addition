@@ -3,14 +3,12 @@
 import kivy
 kivy.require('1.8.0-dev')
 
-from kivy.uix.widget import Widget
 from walls import Horizontal, Vertical
 from players import PC
 
 class level():
 
-  @classmethod
-  def gen():
+  def gen(self):
     vert = []
     hort = []
     i = 0
@@ -18,8 +16,8 @@ class level():
     while i < 100:
       vert.append(Vertical())
       hort.append(Horizontal())
-      add_widget(vert[i])
-      add_widget(hort[i])
+      self.add_widget(vert[i])
+      self.add_widget(hort[i])
       i += 1
     vert[0].Vert(1270, 40, 80)
     hort[0].Hort(1120, 10, 320)

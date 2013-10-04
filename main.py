@@ -114,7 +114,8 @@ class WarBackground(Widget): #the root widget, the window maker
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
-    level.gen() #generate player levels
+    levels = level()
+    levels.gen() #generate player levels
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
 
