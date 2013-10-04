@@ -6,13 +6,13 @@ kivy.require('1.8.0-dev')
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty
-from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Line
 from players import PC
 from weapons import Laser
 from walls import Horizontal, Vertical
+from levels import level
 
 class WarBackground(Widget): #the root widget, the window maker
   player = ObjectProperty(None) #assign all the stuff to draw, player char.
@@ -27,30 +27,6 @@ class WarBackground(Widget): #the root widget, the window maker
     self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
     self._keyboard.bind(on_key_down=self._on_keyboard_down)
     self._keyboard.bind(on_key_up=self._on_keyboard_up)
-
-  def levelgen(self):
-    self.i = 0
-    self.player.center_x = 1250; self.player.center_y = 30
-    while self.i < 100:
-      self.w_vert.append(Vertical())
-      self.w_hort.append(Horizontal())
-      self.add_widget(self.w_vert[self.i])
-      self.add_widget(self.w_hort[self.i])
-      self.i += 1
-    self.w_vert[0].Vert(1270, 40, 80)
-    self.w_hort[0].Hort(1120, 10, 320)
-    self.w_hort[1].Hort(1260, 70, 80)
-    self.w_vert[1].Vert(1230, 200, 320)
-    self.w_hort[2].Hort(1230, 50, 20)
-    self.w_vert[2].Vert(970, 90, 180)
-    self.w_hort[3].Hort(1070, 150, 220)
-    self.w_vert[3].Vert(1170, 160, 40)
-    self.w_vert[4].Vert(1170, 230, 60)
-    self.w_vert[5].Vert(1170, 300, 40)
-    self.w_vert[6].Vert(1070, 230, 180)
-    self.w_hort[4].Hort(1070, 310, 220)
-    self.w_vert[7].Vert(970, 230, 60)
-    self.w_vert[8].Vert(970, 300, 40)
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -138,7 +114,7 @@ class WarBackground(Widget): #the root widget, the window maker
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
-    background.levelgen() #generate player levels
+    level.gen() #generate player levels
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
 
