@@ -1,27 +1,17 @@
 #:kivy 1.8.0-dev
 
+#: import PC players
+
 <WarBackground>:
   player: hp
-#  w_vert: vw
 
-  WarPlayer:
+  PC:
     id: hp
     center: 0, 0
 
-#  Vertical_Wall:
-#    id: vw
-#    center: 1250, 53
-
-<WarPlayer>:
+<PC>:
   size: 10, 10
   canvas:
     Ellipse:
       size: self.size
       pos: self.pos
-
-#<Vertical_Wall>:
-#  size: 15, 100
-#  canvas:
-#    Rectangle:
-#      size: self.size
-#      pos: self.pos
