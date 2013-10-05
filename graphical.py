@@ -23,6 +23,9 @@ class Vertical(Widget):
       Line(points=[xp, yp - h/2, xp, yp + h/2], width=10, cap='none')
       Color(*(0.2, 0.2, 0.2, 1), mode='rgba')
       Line(points=[xp, yp - h/2, xp, yp + h/2], width=3, cap='none')
+      Color(*(0.1, 0.1, 1, 1), mode='rgba')
+      Line(points=[xp + 11, yp - h/2, xp + 11, yp + h/2], width=1, cap='none', dash_length = 20, dash_offset = 20)
+      Line(points=[xp - 11, yp - h/2, xp - 11, yp + h/2], width=1, cap='none', dash_length = 20, dash_offset = 20)
       self.center_x = xp; self.center_y = yp
     self.col_check = 1
 
@@ -64,6 +67,9 @@ class Horizontal(Widget):
       Line(points=[xp - w/2, yp, xp + w/2, yp], width=10, cap='none')
       Color(*(0.2, 0.2, 0.2, 1), mode='rgba')
       Line(points=[xp - w/2, yp, xp + w/2, yp], width=3, cap='none')
+      Color(*(0.1, 0.1, 1, 1), mode='rgba')
+      Line(points=[xp - w/2, yp + 11, xp + w/2, yp + 11], width=1, cap='none', dash_length = 20, dash_offset = 20)
+      Line(points=[xp - w/2, yp - 11, xp + w/2, yp - 11], width=1, cap='none', dash_length = 20, dash_offset = 20)
       self.center_x = xp; self.center_y = yp
     self.col_check = 1
       
