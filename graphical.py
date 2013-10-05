@@ -16,9 +16,9 @@ class Vertical(Widget):
   def wall(self, xp, yp, w_height):
     self.l = [xp - 10, yp - w_height/2, xp - 10, yp + w_height/2]
     self.r = [xp + 10, yp - w_height/2, xp + 10, yp + w_height/2]
-    self.size = 20, w_height - 2
+    self.size = 20, w_height - 4
     with self.canvas:
-      Color(*(0, 1, 1, .5), mode='rgba')
+      Color(*(0.05, 0.1, 0.05, 1), mode='rgba')
       Line(points=[xp, yp - w_height/2, xp, yp + w_height/2], width=10, cap='none')
       self.center_x = xp; self.center_y = yp
 
@@ -57,7 +57,7 @@ class Horizontal(Widget):
     self.t = [xp - w_width/2, yp + 10, xp + w_width/2, yp + 10]
     self.size = w_width - 2, 20
     with self.canvas:
-      Color(*(0, 1, 1, .5), mode='rgba')
+      Color(*(0.05, 0.1, 0.05, 1), mode='rgba')
       Line(points=[xp - w_width/2, yp, xp + w_width/2, yp], width=10, cap='none')
       self.center_x = xp; self.center_y = yp
       
