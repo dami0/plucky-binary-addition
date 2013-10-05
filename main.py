@@ -27,6 +27,7 @@ class WarBackground(Widget): #the root widget, the window maker
     self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
     self._keyboard.bind(on_key_down=self._on_keyboard_down)
     self._keyboard.bind(on_key_up=self._on_keyboard_up)
+    self.dead = 0
 
   def _keyboard_closed(self):
     self._keyboard = None
@@ -93,21 +94,27 @@ class WarBackground(Widget): #the root widget, the window maker
     f.close()    
 
   def on_touch_down(self, touch): #shoot lazors on click! whooooooooo!
-    index = len(self.c)
-    self.c.append(Laser()) #add a gun class for the currently used gun
-    self.add_widget(self.c[index]) #draw the lazor
-    self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
-    i = 0
-    while i < len(self.levelparts) - 1:
-      self.levelparts[i].detect1(self.c[index])
-      self.levelparts[i].detect2(self.c[index])
-      i += 1
-    Clock.schedule_once(self.clean_call, 1)
-    return True
+    if not self.dead:
+      self.dead = 1
+      index = len(self.c)
+      self.c.append(Laser()) #add a gun class for the currently used gun
+      self.add_widget(self.c[index]) #draw the lazor
+      self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
+      i = 0
+      while i < len(self.levelparts) - 1:
+        self.levelparts[i].detect1(self.c[index])
+        self.levelparts[i].detect2(self.c[index])
+        i += 1
+      Clock.schedule_once(self.clean_call, 1)
+      Clock.schedule_once(self.tau, 0.1)
+      return True
 
   def clean_call(self, dt):
     self.remove_widget(self.c[0])
     self.c.pop(0)
+
+  def tau(self, dt):
+    self.dead = 0
 
   def update(self, dt): #overall game update mechanism
     self.pc.move(dt)  #move dat blob
