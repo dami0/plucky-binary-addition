@@ -10,7 +10,7 @@ def cleanup(walls):
     line = line.replace(' ', '0')
     cnt = 0; b = 0
     first = [int(line[0]), int(line[1])]
-    while cnt < 3:
+    while cnt < 4:
       b = cnt*5 + 3
       first.append((int(line[b:(b+4)])))
       cnt += 1
@@ -26,4 +26,6 @@ def levelgen(walls):
         walls.append(line[2:5] + [0])
       if line[1]:
         walls.append(line[2:5] + [1])
+    if line[0]:
+      walls.append(line[2:6])
   return walls

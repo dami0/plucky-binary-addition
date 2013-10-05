@@ -1,17 +1,22 @@
 #:kivy 1.8.0-dev
 
-#: import PC players
+#: import player players
 
 <WarBackground>:
-  player: hp
+  pc: hp
 
-  PC:
+  Player:
     id: hp
     center: 0, 0
 
-<PC>:
+<Player>:
   size: 10, 10
   canvas:
     Ellipse:
       size: self.size
       pos: self.pos
+    Color:
+      rgb: 0, 0, 0
+    Ellipse:
+      size: 7, 6
+      pos: self.center_x - 3.5, self.center_y - 3
