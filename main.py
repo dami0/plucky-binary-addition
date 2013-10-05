@@ -19,7 +19,7 @@ class WarBackground(Widget): #the root widget, the window maker
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
   c = []
-  levelstuff = [Vertical(), Horizontal()]
+  levelclass = [Vertical, Horizontal]
   levelparts = []
 
   def __init__(self, **kwargs): #standard adds for keyboard and things
@@ -87,9 +87,9 @@ class WarBackground(Widget): #the root widget, the window maker
 
     llist = levelgen(readin)
     for stuff in llist:
-      self.levelparts.append(self.levelstuff[stuff[3]])
+      self.levelparts.append(self.levelclass[stuff[3]]())
       self.add_widget(self.levelparts[-1])
-      self.levelparts[-1].wall[stuff[0:3]]
+      self.levelparts[-1].wall(stuff[0], stuff[1], stuff[2])
 
     f.close()    
 
@@ -98,16 +98,11 @@ class WarBackground(Widget): #the root widget, the window maker
     self.c.append(Laser()) #add a gun class for the currently used gun
     self.add_widget(self.c[index]) #draw the lazor
     self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
-    self.i = 0
-    while self.i < self.v:
-      self.vert[self.i].l_detect(self.c[index])
-      self.vert[self.i].r_detect(self.c[index])
-      self.i += 1
-    self.i = 0
-    while self.i < self.h:
-      self.hort[self.i].b_detect(self.c[index])
-      self.hort[self.i].t_detect(self.c[index])
-      self.i += 1
+    i = 0
+    while i < len(self.levelparts):
+      self.levelparts[i].detect1(self.c[index])
+      self.levelparts[i].detect2(self.c[index])
+      i += 1
     Clock.schedule_once(self.clean_call, 1)
     return True
 
@@ -118,21 +113,16 @@ class WarBackground(Widget): #the root widget, the window maker
   def update(self, dt): #overall game update mechanism
     self.pc.move(dt)  #move dat blob
 
-#    self.i = 0
-#    while self.i < self.v:
-#      self.vert[self.i].collision_detect(self.pc)
-#      self.i += 1
-#    self.i = 0
-#    while self.i < self.h:
-#      self.hort[self.i].collision_detect(self.pc)
-#      self.i += 1
+    i = 0
+    while i < len(self.levelparts):
+      self.levelparts[i].collision_detect(self.pc)
+      i += 1
       
 
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
     background.generate()
-#    background.levelgen()
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
 

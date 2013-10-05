@@ -8,7 +8,7 @@ from kivy.properties import NumericProperty, ReferenceListProperty
 from kivy.vector import Vector
 
 
-class PC(Widget):
+class Player(Widget):
   '''
   This is the player class. It defines movement/position parameters and
   player status variables like health, stamina and quite a few other things

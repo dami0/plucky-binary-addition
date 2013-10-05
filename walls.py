@@ -29,7 +29,7 @@ class Vertical(Widget):
       elif playa.velocity_x > 0:
         playa.pos[0] -= 90*playa.dt
 
-  def l_detect(self, gun):
+  def detect1(self, gun):
     i = Vector.line_intersection(self.l[0:2], self.l[2:4], gun.s, gun.e)
     a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
@@ -38,7 +38,7 @@ class Vertical(Widget):
         gun.canvas.clear()
         gun.rifle(gun.s, i)
 
-  def r_detect(self, gun):
+  def detect2(self, gun):
     i = Vector.line_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
     a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
@@ -68,7 +68,7 @@ class Horizontal(Widget):
       elif playa.velocity_y > 0:
         playa.pos[1] -= 90*playa.dt
 
-  def b_detect(self, gun):
+  def detect1(self, gun):
     i = Vector.line_intersection(self.b[0:2], self.b[2:4], gun.s, gun.e)
     a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
@@ -77,7 +77,7 @@ class Horizontal(Widget):
         gun.canvas.clear()
         gun.rifle(gun.s, i)
 
-  def t_detect(self, gun):
+  def detect2(self, gun):
     i = Vector.line_intersection(self.t[0:2], self.t[2:4], gun.s, gun.e)
     a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
     b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]

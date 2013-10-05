@@ -15,7 +15,7 @@ class Laser(Widget):
   instantly. In reality it's the speed of light, but can you be bothered
   to code in a speed of 30,000,000 metres a second? Didn't think so.
   '''
-  def Rifle(self, s, e):
+  def rifle(self, s, e):
     #the code for a red line, because c'mon, it's a lazor!
     self.s = s
     self.e = e
