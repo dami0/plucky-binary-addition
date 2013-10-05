@@ -10,7 +10,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from players import Player
 from weapons import Laser
-from walls import Horizontal, Vertical
+from graphical import Horizontal, Vertical, Vdoors
 from levels import playergen, levelgen
 
 
@@ -19,7 +19,7 @@ class WarBackground(Widget): #the root widget, the window maker
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
   c = []
-  levelclass = [Vertical, Horizontal]
+  levelclass = [Vertical, Horizontal, Vdoors]
   levelparts = []
 
   def __init__(self, **kwargs): #standard adds for keyboard and things
@@ -89,8 +89,7 @@ class WarBackground(Widget): #the root widget, the window maker
     for stuff in llist:
       self.levelparts.append(self.levelclass[stuff[3]]())
       self.add_widget(self.levelparts[-1])
-      self.levelparts[-1].wall(stuff[0], stuff[1], stuff[2])
-
+      self.levelparts[-1].draws(stuff[0], stuff[1], stuff[2])
     f.close()    
 
   def on_touch_down(self, touch): #shoot lazors on click! whooooooooo!
@@ -99,7 +98,7 @@ class WarBackground(Widget): #the root widget, the window maker
     self.add_widget(self.c[index]) #draw the lazor
     self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
     i = 0
-    while i < len(self.levelparts):
+    while i < len(self.levelparts) - 1:
       self.levelparts[i].detect1(self.c[index])
       self.levelparts[i].detect2(self.c[index])
       i += 1
@@ -115,13 +114,15 @@ class WarBackground(Widget): #the root widget, the window maker
 
     i = 0
     while i < len(self.levelparts):
-      self.levelparts[i].collision_detect(self.pc)
+      if self.levelparts[i].col_check:
+        self.levelparts[i].collision_detect(self.pc)
       i += 1
       
 
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
+    Window.clearcolor = (0.2, 0.2, 0.2, 1)
     background.generate()
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
