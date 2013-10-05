@@ -1,35 +1,29 @@
 #!/usr/bin/python2
 
-import kivy
-kivy.require('1.8.0-dev')
 
-from walls import Horizontal, Vertical
-from players import PC
+def playergen(walls):
+  return int((walls[0])[0:4]), int((walls[0])[-4:])
 
-class level():
+def cleanup(walls):
+  walls.pop(0); temp = []
+  for line in walls:
+    line = line.replace(' ', '0')
+    cnt = 0; b = 0
+    first = [int(line[0]), int(line[1])]
+    while cnt < 3:
+      b = cnt*5 + 3
+      first.append((int(line[b:(b+4)])))
+      cnt += 1
+    temp.append(first)
+  return temp
 
-  def gen(self):
-    vert = []
-    hort = []
-    i = 0
-    PC.center_x = 1250; PC.center_y = 30
-    while i < 100:
-      vert.append(Vertical())
-      hort.append(Horizontal())
-      self.add_widget(vert[i])
-      self.add_widget(hort[i])
-      i += 1
-    vert[0].Vert(1270, 40, 80)
-    hort[0].Hort(1120, 10, 320)
-    hort[1].Hort(1260, 70, 80)
-    vert[1].Vert(1230, 200, 320)
-    hort[2].Hort(1230, 50, 20)
-    vert[2].Vert(970, 90, 180)
-    hort[3].Hort(1070, 150, 220)
-    vert[3].Vert(1170, 160, 40)
-    vert[4].Vert(1170, 230, 60)
-    vert[5].Vert(1170, 300, 40)
-    vert[6].Vert(1070, 230, 180)
-    hort[4].Hort(1070, 310, 220)
-    vert[7].Vert(970, 230, 60)
-    vert[8].Vert(970, 300, 40)
+def levelgen(walls):
+  ent = cleanup(walls)
+  walls = []
+  for line in ent:
+    if not line[0]:
+      if not line[1]:
+        walls.append(line[2:5] + [0])
+      if line[1]:
+        walls.append(line[2:5] + [1])
+  return walls

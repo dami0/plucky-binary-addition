@@ -13,10 +13,10 @@ class Vertical(Widget):
   This is for the level design. A vertical wall, width 10 and definable
   placement as well as length.
   '''
-  def Vert(self, xp, yp, w_height):
+  def wall(self, xp, yp, w_height):
     self.l = [xp - 10, yp - w_height/2, xp - 10, yp + w_height/2]
     self.r = [xp + 10, yp - w_height/2, xp + 10, yp + w_height/2]
-    self.size = 20, w_height
+    self.size = 20, w_height - 2
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
       Line(points=[xp, yp - w_height/2, xp, yp + w_height/2], width=10, cap='none')
@@ -36,7 +36,7 @@ class Vertical(Widget):
     if (i[0] == self.l[0]) and (self.l[1] <= i[1] <= self.l[3]):
       if (a) and (b):
         gun.canvas.clear()
-        gun.Rifle(gun.s, i)
+        gun.rifle(gun.s, i)
 
   def r_detect(self, gun):
     i = Vector.line_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
@@ -45,15 +45,17 @@ class Vertical(Widget):
     if (i[0] == self.r[0]) and (self.r[1] <= i[1] <= self.r[3]):
       if (a) and (b):
         gun.canvas.clear()
-        gun.Rifle(gun.s, i)
+        gun.rifle(gun.s, i)
 
 class Horizontal(Widget):
-  '''This is for the level design. A horizontal wall, width 10 and definable
-     placement as well as length.'''
-  def Hort(self, xp, yp, w_width):
+  '''
+  This is for the level design. A horizontal wall, width 10 and definable
+  placement as well as length.
+  '''
+  def wall(self, xp, yp, w_width):
     self.b = [xp - w_width/2, yp - 10, xp + w_width/2, yp - 10]
     self.t = [xp - w_width/2, yp + 10, xp + w_width/2, yp + 10]
-    self.size = w_width, 20
+    self.size = w_width - 2, 20
     with self.canvas:
       Color(*(0, 1, 1, .5), mode='rgba')
       Line(points=[xp - w_width/2, yp, xp + w_width/2, yp], width=10, cap='none')
@@ -73,7 +75,7 @@ class Horizontal(Widget):
     if (self.b[0] <= i[0] <= self.b[2]) and (i[1] == self.b[3]):
       if (a) and (b):
         gun.canvas.clear()
-        gun.Rifle(gun.s, i)
+        gun.rifle(gun.s, i)
 
   def t_detect(self, gun):
     i = Vector.line_intersection(self.t[0:2], self.t[2:4], gun.s, gun.e)
@@ -82,4 +84,4 @@ class Horizontal(Widget):
     if (self.t[0] <= i[0] <= self.t[2]) and (i[1] == self.t[1]):
       if (a) and (b):
         gun.canvas.clear()
-        gun.Rifle(gun.s, i)
+        gun.rifle(gun.s, i)
