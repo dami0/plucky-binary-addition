@@ -8,9 +8,10 @@ from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.vector import Vector
 from players import Player
 from weapons import Laser
-from graphical import Horizontal, Vertical, Vdoors
+from graphical import Horizontal, Vertical, Vdoors, Hdoors, Alight
 from levels import playergen, levelgen
 
 
@@ -19,7 +20,7 @@ class WarBackground(Widget): #the root widget, the window maker
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
   c = []
-  levelclass = [Vertical, Horizontal, Vdoors]
+  levelclass = [Vertical, Horizontal, Vdoors, Hdoors, Alight]
   levelparts = []
 
   def __init__(self, **kwargs): #standard adds for keyboard and things
@@ -118,6 +119,9 @@ class WarBackground(Widget): #the root widget, the window maker
 
     for element in self.levelparts:
       element.collision_detect(self.pc)
+
+#    rot_ang = Vector(self.pc.pos).angle(Window.mouse_pos)
+#    self.pc.rotate(rot_ang, 0, 0, 0)
           
 
 class WarApp(App): #main app process
