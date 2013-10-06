@@ -8,6 +8,7 @@ from kivy.graphics import Color, Line
 from kivy.vector import Vector
 from kivy.animation import Animation
 from kivy.clock import Clock
+from kivy.properties import NumericProperty
 
 
 class Vertical(Widget):
@@ -23,11 +24,7 @@ class Vertical(Widget):
       Line(points=[xp, yp - h/2, xp, yp + h/2], width=10, cap='none')
       Color(*(0.2, 0.2, 0.2, 1), mode='rgba')
       Line(points=[xp, yp - h/2, xp, yp + h/2], width=3, cap='none')
-      Color(*(0.1, 0.1, 1, 1), mode='rgba')
-      Line(points=[xp + 11, yp - h/2, xp + 11, yp + h/2], width=1, cap='none', dash_length = 20, dash_offset = 20)
-      Line(points=[xp - 11, yp - h/2, xp - 11, yp + h/2], width=1, cap='none', dash_length = 20, dash_offset = 20)
       self.center_x = xp; self.center_y = yp
-    self.col_check = 1
 
   def collision_detect(self, playa):
     if self.collide_widget(playa):
@@ -36,23 +33,14 @@ class Vertical(Widget):
       elif playa.velocity_x > 0:
         playa.pos[0] -= 90*playa.dt
 
-  def detect1(self, gun):
-    i = Vector.line_intersection(self.l[0:2], self.l[2:4], gun.s, gun.e)
-    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
-    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
-    if (i[0] == self.l[0]) and (self.l[1] <= i[1] <= self.l[3]):
-      if (a) and (b):
-        gun.canvas.clear()
-        gun.rifle(gun.s, i)
-
-  def detect2(self, gun):
-    i = Vector.line_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
-    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
-    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
-    if (i[0] == self.r[0]) and (self.r[1] <= i[1] <= self.r[3]):
-      if (a) and (b):
-        gun.canvas.clear()
-        gun.rifle(gun.s, i)
+  def detect(self, gun):
+    i = 0
+    if gun.s[0] < self.l[0]:
+      i = Vector.segment_intersection(self.l[0:2], self.l[2:4], gun.s, gun.e)
+    if gun.s[0] > self.r[0]:
+      i = Vector.segment_intersection(self.r[0:2], self.r[2:4], gun.s, gun.e)
+    if i: gun.canvas.clear()
+    if i: gun.rifle(gun.s, i)
 
 class Horizontal(Widget):
   '''
@@ -67,11 +55,7 @@ class Horizontal(Widget):
       Line(points=[xp - w/2, yp, xp + w/2, yp], width=10, cap='none')
       Color(*(0.2, 0.2, 0.2, 1), mode='rgba')
       Line(points=[xp - w/2, yp, xp + w/2, yp], width=3, cap='none')
-      Color(*(0.1, 0.1, 1, 1), mode='rgba')
-      Line(points=[xp - w/2, yp + 11, xp + w/2, yp + 11], width=1, cap='none', dash_length = 20, dash_offset = 20)
-      Line(points=[xp - w/2, yp - 11, xp + w/2, yp - 11], width=1, cap='none', dash_length = 20, dash_offset = 20)
       self.center_x = xp; self.center_y = yp
-    self.col_check = 1
       
   def collision_detect(self, playa):
     if self.collide_widget(playa):
@@ -80,23 +64,15 @@ class Horizontal(Widget):
       elif playa.velocity_y > 0:
         playa.pos[1] -= 90*playa.dt
 
-  def detect1(self, gun):
-    i = Vector.line_intersection(self.b[0:2], self.b[2:4], gun.s, gun.e)
-    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
-    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
-    if (self.b[0] <= i[0] <= self.b[2]) and (i[1] == self.b[3]):
-      if (a) and (b):
-        gun.canvas.clear()
-        gun.rifle(gun.s, i)
+  def detect(self, gun):
+    i = 0
+    if gun.s[1] < self.b[1]:
+      i = Vector.segment_intersection(self.b[0:2], self.b[2:4], gun.s, gun.e)
+    if gun.s[1] > self.t[1]:
+      i = Vector.segment_intersection(self.t[0:2], self.t[2:4], gun.s, gun.e)
+    if i: gun.canvas.clear()
+    if i: gun.rifle(gun.s, i)
 
-  def detect2(self, gun):
-    i = Vector.line_intersection(self.t[0:2], self.t[2:4], gun.s, gun.e)
-    a = gun.s[0] <= i[0] <= gun.e[0] or gun.e[0] <= i[0] <= gun.s[0]
-    b = gun.s[1] <= i[1] <= gun.e[1] or gun.e[1] <= i[1] <= gun.s[1]
-    if (self.t[0] <= i[0] <= self.t[2]) and (i[1] == self.t[1]):
-      if (a) and (b):
-        gun.canvas.clear()
-        gun.rifle(gun.s, i)
 
 class Vdoors(Widget):
   '''
@@ -106,66 +82,124 @@ class Vdoors(Widget):
   def __init__(self, **kwargs):
     super(Vdoors, self).__init__(**kwargs)
     self.flag = 1
-    self.p = 9
-    self.col_check = 1
+    self.d_height = 10
+    self.l1, self.l2 = [0, 0, 0, 0], [0, 0, 0, 0]
+    self.l3, self.l4 = [0, 0, 0, 0], [0, 0, 0, 0]
 
-  def draws(self, xp, yp, s):
-    ty = yp + 10; by = ty - s
-    self.xp = xp; self.yp = yp
-    self.size = 30, 10
+  def draws(self, xp, yp, *args):
+    self.xp = xp
+    self.bp = yp - 10
+    self.tp = yp + 10 
+    self.size = 40, 30
     with self.canvas:
       Color(*(1, 0.3, 0.2, 1), mode='rgba')
-      Line(points=[xp, by, xp, ty], width=3, cap='none')
+      Line(points=[xp, yp + 10, xp, yp - 10], width=3, cap='none')
       self.center_x = xp; self.center_y = yp
+    self.opena = Animation(d_height = 0, d = 0.25, s = .25/20.)
+    self.opena.bind(on_progress=self.slide)
+    self.closea = Animation(d_height = 10, d = 0.25, s = .25/20.)
+    self.closea.bind(on_progress=self.slide)
 
-  def draws2(self, xp, yp, s):
-    by = yp - 10; ty = by + s
-    self.size = 40, 20
+  def slide(self, *args):
+    self.canvas.clear()
     with self.canvas:
       Color(*(1, 0.3, 0.2, 1), mode='rgba')
-      Line(points=[xp, ty, xp, by], width=3, cap='none')
-      self.center_x = xp; self.center_y = yp
+      Line(points=[self.xp, self.tp, self.xp, self.tp - self.d_height], width=3, cap='none')
+      Line(points=[self.xp, self.bp, self.xp, self.bp + self.d_height], width=3, cap='none')
+    self.l1 = self.xp - 1.5, self.tp, self.xp - 1.5, self.tp - self.d_height
+    self.l2 = self.xp + 1.5, self.tp, self.xp + 1.5, self.tp - self.d_height
+    self.l3 = self.xp + 1.5, self.bp, self.xp + 1.5, self.bp + self.d_height
+    self.l2 = self.xp - 1.5, self.bp, self.xp - 1.5, self.bp + self.d_height
 
   def collision_detect(self, playa):
     if (self.collide_widget(playa) and self.flag):
       self.flag = 0
-      self.col_check = 0
-      self.p = 10
-      Clock.schedule_once(self.opencall, 0)
+      self.opena.start(self)
       print 'opening'
     if not self.collide_widget(playa) and not self.flag:
       self.flag = 1
-      self.col_check = 0
-      self.p = 0
-      Clock.schedule_once(self.closecall, 0)
+      self.closea.start(self)
       print 'closing'
+    if (self.xp -15 < playa.center_x < self.xp + 15) and playa.center_y <= self.bp + 5:
+      playa.pos[1] += 90*playa.dt
+    if (self.xp -15 < playa.center_x < self.xp + 15) and playa.center_y >= self.tp - 5:
+      playa.pos[1] -= 90*playa.dt
 
-  def opencall(self, *args):
-    opena = Animation(d = 0.25, s = .25/10.)
-    opena.bind(on_progress=self.slideo)
-    opena.bind(on_complete=self.no_col)
-    opena.start(self)
+  def detect(self, gun):
+    i = 0
+    if gun.s[0] < self.l1[0]:
+      i = Vector.segment_intersection(self.l1[0:2], self.l1[2:4], gun.s, gun.e)
+    if gun.s[0] > self.l1[0]:
+      i = Vector.segment_intersection(self.l2[0:2], self.l2[2:4], gun.s, gun.e)
+    if gun.s[0] < self.l1[0]:
+      i = Vector.segment_intersection(self.l3[0:2], self.l3[2:4], gun.s, gun.e)
+    if gun.s[0] > self.l1[0]:
+      i = Vector.segment_intersection(self.l4[0:2], self.l4[2:4], gun.s, gun.e)
+    if i: gun.canvas.clear()
+    if i: gun.rifle(gun.s, i)
 
-  def closecall(self, *args):
-    closea = Animation(d = 0.25, s = .25/10.)
-    closea.bind(on_progress=self.slidec)
-    closea.bind(on_complete=self.no_col)
-    closea.start(self)
 
-  def no_col(self, *args):
-    self.col_check = 1
+class Hdoors(Widget):
+  '''
+  This is a set of doors that automagically open when the player is near them.
+  They also have some glowing lights. This is sci-fi after all.
+  '''
+  def __init__(self, **kwargs):
+    super(Vdoors, self).__init__(**kwargs)
+    self.flag = 1
+    self.d_width = 10
 
-  def slideo(self, *args):
+  def draws(self, xp, yp, *args):
+    self.yp = yp
+    self.lp = xp - 10
+    self.rp = xp + 10
+    self.size = 40, 30
+    with self.canvas:
+      Color(*(1, 0.3, 0.2, 1), mode='rgba')
+      Line(points=[xp + 10, yp, xp - 10, yp], width=3, cap='none')
+      self.center_x = xp; self.center_y = yp
+    self.opena = Animation(d_width = 0, d = 0.25, s = .01)
+    self.opena.bind(on_progress=self.slide)
+    self.closea = Animation(d_width = 10, d = 0.25, s = .01)
+    self.closea.bind(on_progress=self.slide)
+    
+
+  def slide(self, *args):
     self.canvas.clear()
-    self.draws(self.xp, self.yp, self.p)
-    self.draws2(self.xp, self.yp, self.p)
-    self.p -= 1
+    with self.canvas:
+      Color(*(1, 0.3, 0.2, 1), mode='rgba')
+      Line(points=[self.lp, self.yp, self.lp + self.d_width, self.yp], width=3, cap='none')
+      Line(points=[self.rp, self.yp, self.rp - self.d_width, self.yp], width=3, cap='none')
+    self.l1 = self.lp, self.yp + 1.5, self.lp + self.d_width, self.yp + 1.5
+    self.l2 = self.rp, self.yp + 1.5, self.rp - self.d_width, self.yp + 1.5
+    self.l3 = self.rp, self.yp - 1.5, self.lp + self.d_width, self.yp - 1.5
+    self.l2 = self.lp, self.yp - 1.5, self.rp - self.d_width, self.yp - 1.5
 
-  def slidec(self, *args):
-    self.canvas.clear()
-    self.draws(self.xp, self.yp, self.p)
-    self.draws2(self.xp, self.yp, self.p)
-    self.p += 1
 
 
-#class Hdoors(Widget):
+  def collision_detect(self, playa):
+    if (self.collide_widget(playa) and self.flag):
+      self.flag = 0
+      self.opena.start(self)
+      print 'opening'
+    if not self.collide_widget(playa) and not self.flag:
+      self.flag = 1
+      self.closea.start(self)
+      print 'closing'
+    if (self.yp - 10 < playa.center_y < self.yp + 10) and playa.center_x <= self.lp:
+      playa.pos[0] += 90*playa.dt
+    if (self.yp - 10 < playa.center_y < self.yp + 10) and playa.center_x >= self.lp:
+      playa.pos[0] -= 90*playa.dt      
+
+  def detect(self, gun):
+    i = 0
+    if gun.s[1] > self.l1[1]:
+      i1 = Vector.segment_intersection(self.l1[0:2], self.l1[2:4], gun.s, gun.e)
+    if gun.s[1] > self.l2[1]:
+      i2 = Vector.segment_intersection(self.l2[0:2], self.l2[2:4], gun.s, gun.e)
+    if gun.s[1] < self.l3[1]:
+      i3 = Vector.segment_intersection(self.l3[0:2], self.l3[2:4], gun.s, gun.e)
+    if gun.s[1] < self.l4[1]:
+      i4 = Vector.segment_intersection(self.l4[0:2], self.l4[2:4], gun.s, gun.e)
+    if i: gun.canvas.clear()
+    if i: gun.rifle(gun.s, i)

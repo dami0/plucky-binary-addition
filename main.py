@@ -100,11 +100,8 @@ class WarBackground(Widget): #the root widget, the window maker
       self.c.append(Laser()) #add a gun class for the currently used gun
       self.add_widget(self.c[index]) #draw the lazor
       self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
-      i = 0
-      while i < len(self.levelparts) - 1:
-        self.levelparts[i].detect1(self.c[index])
-        self.levelparts[i].detect2(self.c[index])
-        i += 1
+      for element in self.levelparts:
+        element.detect(self.c[index])
       Clock.schedule_once(self.clean_call, 1)
       Clock.schedule_once(self.tau, 0.1)
       return True
@@ -119,12 +116,9 @@ class WarBackground(Widget): #the root widget, the window maker
   def update(self, dt): #overall game update mechanism
     self.pc.move(dt)  #move dat blob
 
-    i = 0
-    while i < len(self.levelparts):
-      if self.levelparts[i].col_check:
-        self.levelparts[i].collision_detect(self.pc)
-      i += 1
-      
+    for element in self.levelparts:
+      element.collision_detect(self.pc)
+          
 
 class WarApp(App): #main app process
   def build(self):
