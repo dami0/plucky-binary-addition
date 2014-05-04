@@ -19,7 +19,7 @@ class WarBackground(Widget): #the root widget, the window maker
   pc = ObjectProperty(None) #assign all the stuff to draw, pc char.
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
-  c = []
+  c = deque([])
   levelclass = [Vertical, Horizontal, Vdoors, Hdoors, Alight]
   levelparts = []
 
@@ -100,7 +100,7 @@ class WarBackground(Widget): #the root widget, the window maker
       index = len(self.c)
       self.c.append(Laser()) #add a gun class for the currently used gun
       self.add_widget(self.c[index]) #draw the lazor
-      self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #make sure lazor travels right
+      self.c[index].rifle(self.pc.center, [touch.x, touch.y]) #ensure lazor travels right
       for element in self.levelparts:
         element.detect(self.c[index])
       Clock.schedule_once(self.clean_call, 1)
@@ -109,7 +109,7 @@ class WarBackground(Widget): #the root widget, the window maker
 
   def clean_call(self, dt):
     self.remove_widget(self.c[0])
-    self.c.pop(0)
+    self.c.popleft()
 
   def tau(self, dt):
     self.dead = 0
