@@ -3,6 +3,7 @@
 import kivy
 kivy.require('1.8.0-dev')
 
+from collections import deque
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
@@ -19,7 +20,7 @@ class WarBackground(Widget): #the root widget, the window maker
   pc = ObjectProperty(None) #assign all the stuff to draw, pc char.
   kcds = dict(zip(['w', 's', 'a', 'd'], [0, 1, 2, 3])) #configurable keybindings
   already_pressed = len(kcds)*[0] #so I can have multiple key presses
-  c = deque([])
+  c = deque()
   levelclass = [Vertical, Horizontal, Vdoors, Hdoors, Alight]
   levelparts = []
 
@@ -89,6 +90,7 @@ class WarBackground(Widget): #the root widget, the window maker
 
     llist = levelgen(readin)
     for stuff in llist:
+      print("adding stuff")
       self.levelparts.append(self.levelclass[stuff[3]]())
       self.add_widget(self.levelparts[-1])
       self.levelparts[-1].draws(stuff[0], stuff[1], stuff[2])
@@ -127,7 +129,7 @@ class WarBackground(Widget): #the root widget, the window maker
 class WarApp(App): #main app process
   def build(self):
     background = WarBackground() #define for easier to work with
-    Window.clearcolor = (0.2, 0.2, 0.2, 1)
+#    Window.clearcolor = (0.2, 0.2, 0.2, 1)
     background.generate()
     Clock.schedule_interval(background.update, 1.0/60.0) #one sixtieth of second running speed
     return background #draw the main game!
